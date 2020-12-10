@@ -1,10 +1,10 @@
 package keeper
 
 import (
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/enigmampc/SecretNetwork/x/compute/internal/types"
-	sdk "github.com/enigmampc/cosmos-sdk/types"
-	sdkerrors "github.com/enigmampc/cosmos-sdk/types/errors"
-	// authexported "github.com/enigmampc/cosmos-sdk/x/auth/exported"
+	// authexported "github.com/cosmos/cosmos-sdk/x/auth/exported"
 	// "github.com/enigmampc/SecretNetwork/x/compute/internal/types"
 )
 
@@ -14,7 +14,7 @@ import (
 func InitGenesis(ctx sdk.Context, keeper Keeper, data types.GenesisState) error {
 	var maxCodeID uint64
 	for i, code := range data.Codes {
-		err := keeper.importCode(ctx, code.CodeID, code.CodeInfo, code.CodesBytes)
+		err := keeper.importCode(ctx, code.CodeID, code.CodeInfo, code.CodeBytes)
 		if err != nil {
 			return sdkerrors.Wrapf(err, "code %d with id: %d", i, code.CodeID)
 		}
@@ -52,7 +52,7 @@ func InitGenesis(ctx sdk.Context, keeper Keeper, data types.GenesisState) error 
 }
 
 // ExportGenesis returns a GenesisState for a given context and keeper.
-func ExportGenesis(ctx sdk.Context, keeper Keeper) types.GenesisState {
+func ExportGenesis(ctx sdk.Context, keeper Keeper) *types.GenesisState {
 	var genState types.GenesisState
 
 	//genState.Params = keeper.GetParams(ctx)
@@ -63,9 +63,9 @@ func ExportGenesis(ctx sdk.Context, keeper Keeper) types.GenesisState {
 			panic(err)
 		}
 		genState.Codes = append(genState.Codes, types.Code{
-			CodeID:     codeID,
-			CodeInfo:   info,
-			CodesBytes: bytecode,
+			CodeID:    codeID,
+			CodeInfo:  info,
+			CodeBytes: bytecode,
 		})
 		return false
 	})
@@ -99,5 +99,5 @@ func ExportGenesis(ctx sdk.Context, keeper Keeper) types.GenesisState {
 		})
 	}
 
-	return genState
+	return &genState
 }

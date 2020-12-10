@@ -3,8 +3,8 @@ package keeper
 import (
 	"encoding/hex"
 	"fmt"
-	"github.com/enigmampc/cosmos-sdk/store/prefix"
-	sdk "github.com/enigmampc/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/store/prefix"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/enigmampc/SecretNetwork/x/registration/internal/types"
 	ra "github.com/enigmampc/SecretNetwork/x/registration/remote_attestation"
 )
@@ -40,7 +40,7 @@ func (k Keeper) GetMasterCertificate(ctx sdk.Context, certType string) *types.Ma
 func (k Keeper) setMasterCertificate(ctx sdk.Context, cert types.MasterCertificate, certType string) {
 	store := ctx.KVStore(k.storeKey)
 
-	store.Set(types.MasterCertPrefix(certType), k.cdc.MustMarshalBinaryBare(cert))
+	store.Set(types.MasterCertPrefix(certType), k.cdc.MustMarshalBinaryBare(&cert))
 }
 
 func (k Keeper) isMasterCertificateDefined(ctx sdk.Context, certType string) bool {
@@ -88,7 +88,7 @@ func (k Keeper) SetRegistrationInfo(ctx sdk.Context, certificate types.Registrat
 
 	fmt.Println("pubkey", hex.EncodeToString(publicKey))
 	fmt.Println("EncryptedSeed", hex.EncodeToString(certificate.EncryptedSeed))
-	store.Set(types.RegistrationKeyPrefix(publicKey), k.cdc.MustMarshalBinaryBare(certificate))
+	store.Set(types.RegistrationKeyPrefix(publicKey), k.cdc.MustMarshalBinaryBare(&certificate))
 }
 
 func (k Keeper) isNodeAuthenticated(ctx sdk.Context, publicKey types.NodeID) (bool, error) {

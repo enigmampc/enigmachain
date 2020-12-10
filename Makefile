@@ -83,15 +83,15 @@ whitespace += $(whitespace)
 comma := ,
 build_tags_comma_sep := $(subst $(whitespace),$(comma),$(build_tags))
 
-ldflags = -X github.com/enigmampc/cosmos-sdk/version.Name=SecretNetwork \
-	-X github.com/enigmampc/cosmos-sdk/version.ServerName=secretd \
-	-X github.com/enigmampc/cosmos-sdk/version.ClientName=secretcli \
-	-X github.com/enigmampc/cosmos-sdk/version.Version=$(VERSION) \
-	-X github.com/enigmampc/cosmos-sdk/version.Commit=$(COMMIT) \
-	-X "github.com/enigmampc/cosmos-sdk/version.BuildTags=$(build_tags)"
+ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=SecretNetwork \
+	-X github.com/cosmos/cosmos-sdk/version.AppName=secretd \
+	-X github.com/enigmampc/SecretNetwork/cmd/secretcli/version.ClientName=secretcli \
+	-X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
+	-X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT) \
+	-X "github.com/cosmos/cosmos-sdk/version.BuildTags=$(build_tags)"
 
 ifeq ($(WITH_CLEVELDB),yes)
-  ldflags += -X github.com/enigmampc/cosmos-sdk/types.DBBackend=cleveldb
+  ldflags += -X github.com/cosmos/cosmos-sdk/types.DBBackend=cleveldb
 endif
 ldflags += -s -w
 ldflags += $(LDFLAGS)
@@ -116,7 +116,7 @@ xgo_build_secretcli: go.sum
 cli:
 	go build -mod=readonly -tags "$(GO_TAGS) secretcli" -ldflags '$(LD_FLAGS)' ./cmd/secretcli
 
-build_local_no_rust: cli bin-data-$(IAS_BUILD)
+build_local_no_rust: bin-data-$(IAS_BUILD)
 	cp go-cosmwasm/target/release/libgo_cosmwasm.so go-cosmwasm/api
 	go build -mod=readonly -tags "$(GO_TAGS)" -ldflags '$(LD_FLAGS)' ./cmd/secretd
 
@@ -124,8 +124,7 @@ build-linux: vendor bin-data-$(IAS_BUILD)
 	BUILD_PROFILE=$(BUILD_PROFILE) $(MAKE) -C go-cosmwasm build-rust
 	cp go-cosmwasm/target/$(BUILD_PROFILE)/libgo_cosmwasm.so go-cosmwasm/api
 #   this pulls out ELF symbols, 80% size reduction!
-	go build -mod=readonly -tags "$(GO_TAGS)" -ldflags '$(LD_FLAGS)' ./cmd/secretd
-	go build -mod=readonly -tags "$(GO_TAGS) secretcli" -ldflags '$(LD_FLAGS)' ./cmd/secretcli
+	go build -tags "$(GO_TAGS)" -ldflags '$(LD_FLAGS)' ./cmd/secretd
 
 build_windows:
 	# CLI only
@@ -345,3 +344,19 @@ bin-data-develop:
 
 bin-data-production:
 	cd ./cmd/secretd && go-bindata -o ias_bin_prod.go -prefix "../../ias_keys/production/" -tags "production,hw" ../../ias_keys/production/...
+
+
+###############################################################################
+###                                Protobuf                                 ###
+###############################################################################
+
+proto-all: proto-gen proto-lint proto-check-breaking
+
+proto-gen:
+	@./scripts/protocgen.sh
+
+proto-lint:
+	@buf check lint --error-format=json
+
+proto-check-breaking:
+	@buf check breaking --against-input '.git#branch=master'

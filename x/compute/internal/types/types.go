@@ -2,13 +2,11 @@ package types
 
 import (
 	"encoding/base64"
+	authlegacy "github.com/cosmos/cosmos-sdk/x/auth/legacy/legacytx"
 
-	sdkerrors "github.com/enigmampc/cosmos-sdk/types/errors"
-	"github.com/enigmampc/cosmos-sdk/x/auth"
-	tmBytes "github.com/tendermint/tendermint/libs/bytes"
-
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	wasmTypes "github.com/enigmampc/SecretNetwork/go-cosmwasm/types"
-	sdk "github.com/enigmampc/cosmos-sdk/types"
 )
 
 const defaultLRUCacheSize = uint64(0)
@@ -17,28 +15,11 @@ const defaultQueryGasLimit = uint64(3000000)
 // base64 of a 64 byte key
 type ContractKey string
 
-// Model is a struct that holds a KV pair
-type Model struct {
-	// hex-encode key to read it better (this is often ascii)
-	Key tmBytes.HexBytes `json:"key"`
-	// base64-encode raw value
-	Value []byte `json:"val"`
-}
-
 func (m Model) ValidateBasic() error {
 	if len(m.Key) == 0 {
 		return sdkerrors.Wrap(ErrEmpty, "key")
 	}
 	return nil
-}
-
-// CodeInfo is data for the uploaded contract WASM code
-type CodeInfo struct {
-	CodeHash []byte         `json:"code_hash"`
-	Creator  sdk.AccAddress `json:"creator"`
-	Source   string         `json:"source"`
-	Builder  string         `json:"builder"`
-	// InstantiateConfig AccessConfig   `json:"instantiate_config"`
 }
 
 func (c CodeInfo) ValidateBasic() error {
@@ -92,17 +73,6 @@ type ContractCodeHistoryEntry struct {
 	Msg       json.RawMessage                  `json:"msg,omitempty"`
 }
 */
-
-// ContractInfo stores a WASM contract instance
-type ContractInfo struct {
-	CodeID  uint64         `json:"code_id"`
-	Creator sdk.AccAddress `json:"creator"`
-	// Admin   sdk.AccAddress `json:"admin,omitempty"`
-	Label string `json:"label"`
-	// never show this in query results, just use for sorting
-	// (Note: when using json tag "-" amino refused to serialize it...)
-	Created *AbsoluteTxPosition `json:"created,omitempty"`
-}
 
 // NewContractInfo creates a new instance of a given WASM contract info
 func NewContractInfo(codeID uint64, creator /* , admin */ sdk.AccAddress, label string, createdAt *AbsoluteTxPosition) ContractInfo {
@@ -165,14 +135,6 @@ func (c *ContractInfo) ResetFromGenesis(ctx sdk.Context) ContractCodeHistoryEntr
 	}
 }
 */
-
-// AbsoluteTxPosition can be used to sort contracts
-type AbsoluteTxPosition struct {
-	// BlockHeight is the block the contract was created at
-	BlockHeight int64
-	// TxIndex is a monotonic counter within the block (actual transaction index, or gas consumed)
-	TxIndex uint64
-}
 
 // LessThan can be used to sort
 func (a *AbsoluteTxPosition) LessThan(b *AbsoluteTxPosition) bool {
@@ -281,7 +243,7 @@ func (m SecretMsg) Serialize() []byte {
 	return append(m.CodeHash, m.Msg...)
 }
 
-func NewVerificationInfo(signBytes []byte, signature auth.StdSignature, callbackSig []byte) wasmTypes.VerificationInfo {
+func NewVerificationInfo(signBytes []byte, signature authlegacy.StdSignature, callbackSig []byte) wasmTypes.VerificationInfo {
 	return wasmTypes.VerificationInfo{
 		Bytes:             signBytes,
 		Signature:         signature,
