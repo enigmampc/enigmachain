@@ -122,6 +122,9 @@ build_local_no_rust: build_local_cli bin-data-$(IAS_BUILD)
 	cp go-cosmwasm/target/release/libgo_cosmwasm.so go-cosmwasm/api
 	go build -mod=readonly -tags "$(GO_TAGS)" -ldflags '$(LD_FLAGS)' ./cmd/secretd
 
+build_rumor:
+	go build -tags "$(GO_TAGS)" -ldflags '$(LD_FLAGS)' ./cmd/rumor
+
 build-linux: vendor bin-data-$(IAS_BUILD)
 	BUILD_PROFILE=$(BUILD_PROFILE) $(MAKE) -C go-cosmwasm build-rust
 	cp go-cosmwasm/target/$(BUILD_PROFILE)/libgo_cosmwasm.so go-cosmwasm/api
@@ -196,6 +199,7 @@ clean:
 	-rm -rf /tmp/SecretNetwork
 	-rm -f ./secretcli*
 	-rm -f ./secretd*
+	-rm -f ./rumor
 #	-find -name librust_cosmwasm_enclave.signed.so -delete
 #	-find -name libgo_cosmwasm.so -delete
 #	-find -name '*.so' -delete
@@ -340,13 +344,13 @@ build-all-test-contracts: build-test-contract
 bin-data: bin-data-sw bin-data-develop bin-data-production
 
 bin-data-sw:
-	cd ./cmd/secretd && go-bindata -o ias_bin_sw.go -prefix "../../ias_keys/sw_dummy/" -tags "!hw" ../../ias_keys/sw_dummy/...
+	cd ./cmd/secretd/lib && go-bindata -o ias_bin_sw.go -prefix "../../../ias_keys/sw_dummy/" -tags "!hw" ../../../ias_keys/sw_dummy/...
 
 bin-data-develop:
-	cd ./cmd/secretd && go-bindata -o ias_bin_dev.go -prefix "../../ias_keys/develop/" -tags "develop,hw" ../../ias_keys/develop/...
+	cd ./cmd/secretd/lib && go-bindata -o ias_bin_dev.go -prefix "../../../ias_keys/develop/" -tags "develop,hw" ../../../ias_keys/develop/...
 
 bin-data-production:
-	cd ./cmd/secretd && go-bindata -o ias_bin_prod.go -prefix "../../ias_keys/production/" -tags "production,hw" ../../ias_keys/production/...
+	cd ./cmd/secretd/lib && go-bindata -o ias_bin_prod.go -prefix "../../../ias_keys/production/" -tags "production,hw" ../../../ias_keys/production/...
 
 secret-contract-optimizer:
 	docker build -f deployment/dockerfiles/secret-contract-optimizer.Dockerfile -t enigmampc/secret-contract-optimizer:${TAG} .
