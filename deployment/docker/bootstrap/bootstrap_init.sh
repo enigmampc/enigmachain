@@ -17,6 +17,7 @@ if [ ! -e "$file" ]; then
   cp ~/node_key.json ~/.secretd/config/node_key.json
 
   perl -i -pe 's/"stake"/"uscrt"/g' ~/.secretd/config/genesis.json
+  perl -i -pe 's/"max_entries": 7/"max_entries": 1000/g' ~/.secretd/config/genesis.json
   secretcli keys add a
   secretcli keys add b
   secretcli keys add c
