@@ -167,4 +167,5 @@ export declare class CosmWasmClient {
   private txsQuery;
   getCodeHashByCodeId(id: number): Promise<string>;
   getCodeHashByContractAddr(addr: string): Promise<string>;
+  getNonceByTxId(txhash: string): Promise<Array<Uint8Array | null>>;
 }
