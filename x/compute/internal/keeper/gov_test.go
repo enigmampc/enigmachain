@@ -43,11 +43,8 @@ func ProposalEqual(proposalA types.Proposal, proposalB types.Proposal) bool {
 // TestGovQueryProposals tests reading how many proposals are active - first testing 0 proposals, then adding
 // an active proposal and checking that there is 1 active
 func TestGovQueryProposals(t *testing.T) {
-	tempDir, err := ioutil.TempDir("", "wasm")
-
-	require.NoError(t, err)
-	defer os.RemoveAll(tempDir)
-	ctx, keepers := CreateTestInput(t, false, tempDir, SupportedFeatures, nil, nil)
+	encoders := DefaultEncoders()
+	ctx, keepers := CreateTestInput(t, false, SupportedFeatures, &encoders, nil)
 	accKeeper, _, keeper, govKeeper := keepers.AccountKeeper, keepers.StakingKeeper, keepers.WasmKeeper, keepers.GovKeeper
 
 	govKeeper.SetProposalID(ctx, types.DefaultStartingProposalID)
@@ -56,7 +53,7 @@ func TestGovQueryProposals(t *testing.T) {
 	govKeeper.SetTallyParams(ctx, types.DefaultTallyParams())
 
 	deposit := sdk.NewCoins(sdk.NewInt64Coin("stake", 5_000_000_000))
-	creator, creatorPrivKey := createFakeFundedAccount(ctx, accKeeper, deposit)
+	creator, creatorPrivKey := CreateFakeFundedAccount(ctx, accKeeper, keeper.bankKeeper, deposit)
 	//
 
 	// upload staking derivates code
@@ -108,11 +105,8 @@ func TestGovQueryProposals(t *testing.T) {
 // TestGovQueryProposals tests reading how many proposals are active - first testing 0 proposals, then adding
 // an active proposal and checking that there is 1 active
 func TestGovVote(t *testing.T) {
-	tempDir, err := ioutil.TempDir("", "wasm")
-
-	require.NoError(t, err)
-	defer os.RemoveAll(tempDir)
-	ctx, keepers := CreateTestInput(t, false, tempDir, SupportedFeatures, nil, nil)
+	encoders := DefaultEncoders()
+	ctx, keepers := CreateTestInput(t, false, SupportedFeatures, &encoders, nil)
 	accKeeper, _, keeper, govKeeper := keepers.AccountKeeper, keepers.StakingKeeper, keepers.WasmKeeper, keepers.GovKeeper
 
 	govKeeper.SetProposalID(ctx, types.DefaultStartingProposalID)
@@ -123,7 +117,7 @@ func TestGovVote(t *testing.T) {
 	deposit2 := sdk.NewCoins(sdk.NewInt64Coin("stake", 5_000_000_000))
 	deposit := sdk.NewCoins(sdk.NewInt64Coin("stake", 5_000_000_000))
 	initFunds := sdk.NewCoins(sdk.NewInt64Coin("stake", 10_000_000_000))
-	creator, creatorPrivKey := createFakeFundedAccount(ctx, accKeeper, initFunds)
+	creator, creatorPrivKey := CreateFakeFundedAccount(ctx, accKeeper, keeper.bankKeeper, initFunds)
 	//
 
 	// upload staking derivates code

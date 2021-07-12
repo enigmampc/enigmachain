@@ -25,11 +25,8 @@ type Delegator struct {
 // TestDistributionRewards tests querying staking rewards from inside a contract - first testing no rewards, then advancing
 // 1 block and checking the rewards again
 func TestDistributionRewards(t *testing.T) {
-	tempDir, err := ioutil.TempDir("", "wasm")
-
-	require.NoError(t, err)
-	defer os.RemoveAll(tempDir)
-	ctx, keepers := CreateTestInput(t, false, tempDir, SupportedFeatures, nil, nil)
+	encoders := DefaultEncoders()
+	ctx, keepers := CreateTestInput(t, false, SupportedFeatures, &encoders, nil)
 	accKeeper, stakingKeeper, keeper, distKeeper := keepers.AccountKeeper, keepers.StakingKeeper, keepers.WasmKeeper, keepers.DistKeeper
 
 	valAddr := addValidator(ctx, stakingKeeper, accKeeper, sdk.NewInt64Coin("stake", 100))
@@ -40,7 +37,7 @@ func TestDistributionRewards(t *testing.T) {
 	assert.Equal(t, v.GetDelegatorShares(), sdk.NewDec(100))
 
 	deposit := sdk.NewCoins(sdk.NewInt64Coin("stake", 5_000_000_000))
-	creator, creatorPrivKey := createFakeFundedAccount(ctx, accKeeper, deposit)
+	creator, creatorPrivKey := CreateFakeFundedAccount(ctx, accKeeper, keeper.bankKeeper, deposit)
 
 	delTokens := sdk.TokensFromConsensusPower(1000)
 	msg2 := staking.NewMsgDelegate(creator, valAddr,
